@@ -22,19 +22,9 @@ public class myjdbcproject {
         rst.close();
     }
 
-    private static void addCustomerRecord() throws Exception {
+    private static void addCustomerRecord(String custNo, String name, long phoneNo, String city) throws Exception {
         // Code to get user input and insert data into database
         pmt = conn.prepareStatement("INSERT INTO CUSTOMER VALUES (?,?,?,?)");
-        scanner.nextLine();
-        System.out.println("Enter custmer no");
-        String custNo = scanner.nextLine().toUpperCase();
-        System.out.println("Enter custmer name");
-        String name = scanner.nextLine().toUpperCase();
-        System.out.println("Enter custmer phone no");
-        long phoneNo = scanner.nextLong();
-        scanner.nextLine();
-        System.out.println("Enter custmer city");
-        String city = scanner.next().toUpperCase();
         pmt.setString(1, custNo);
         pmt.setString(2, name);
         pmt.setLong(3, phoneNo);
@@ -47,12 +37,9 @@ public class myjdbcproject {
         }
     }
 
-    private static void deleteCustomerRecord() throws Exception {
+    private static void deleteCustomerRecord(String custNo) throws Exception {
         // Code to get customer number and delete record from database
         pmt = conn.prepareStatement("DELETE FROM CUSTOMER WHERE CUST_NO=?");
-        scanner.nextLine();
-        System.out.println("Enter custmer no");
-        String custNo = scanner.nextLine().toUpperCase();
         pmt.setString(1, custNo);
         int r = pmt.executeUpdate();
         if (r > 0) {
@@ -62,12 +49,10 @@ public class myjdbcproject {
         }
     }
 
-    private static void updateCustomerInformation() throws Exception {
+    private static void updateCustomerInformation(String custNo) throws Exception {
         // Code to get customer number, update choice, and update data
         int updateChoice;
-        scanner.nextLine();
-        System.out.println("Enter Customer number to be updated");
-        String custNo = scanner.nextLine().toUpperCase();
+
         System.out.println("\nUpdate Options:");
         System.out.println("1. Update Name");
         System.out.println("2. Update Phone Number");
@@ -87,7 +72,7 @@ public class myjdbcproject {
                 pmt.setString(1, newName);
                 pmt.setString(2, custNo);
                 r = pmt.executeUpdate();
-                if (r > 1) {
+                if (r == 1) {
                     System.out.println("Customer name updated successfully!");
                     System.out.println("New data is\n");
                     showCustomerRecords();
@@ -130,31 +115,26 @@ public class myjdbcproject {
         }
     }
 
-    private static void showAccountDetails() throws Exception{
+    private static void showAccountDetails(String accountNo) throws Exception{
         // Code to get customer number and display account details
-        scanner.nextLine();
-        System.out.println("Enter Account number");
-        String accNo = scanner.nextLine().toUpperCase();
         pmt=conn.prepareStatement("SELECT * FROM ACCOUNT WHERE ACCOUNT_NO=?");
-        pmt.setString(1,accNo);
+        pmt.setString(1,accountNo);
         ResultSet rst=pmt.executeQuery();
         System.out.println("\nACCOUNT DETAILS ARE AS FOLLOWS\n");
         System.out.printf("| %-15s | %-5s | %-10s | %-15s |\n", "Account No", "Type", "Balance", "Branch Code");
         while (rst.next()) {
-            accNo = String.format("%-15s", rst.getString(1));
+            accountNo = String.format("%-15s", rst.getString(1));
             String type = String.format("%-5s", rst.getString(2));
             String balance = String.format("%10d", rst.getLong(3));
             String brCode = String.format("%-15s", rst.getString(4));
-            System.out.println("| " + accNo + " | " + type + " | " + balance + " | " + brCode + " |");
+            System.out.println("| " + accountNo + " | " + type + " | " + balance + " | " + brCode + " |");
         }
         rst.close();
     }
 
-    private static void showLoanDetails() throws Exception{
+    private static void showLoanDetails(String custNo) throws Exception{
         // Code to get customer number and display loan details
-        scanner.nextLine();
-        System.out.println("Enter Customer number to be updated");
-        String custNo = scanner.nextLine().toUpperCase();
+
         pmt=conn.prepareStatement("SELECT * FROM CUSTOMER JOIN LOAN ON CUSTOMER.CUST_NO=LOAN.CUST_NO WHERE CUSTOMER.CUST_NO=?");
         pmt.setString(1,custNo);
         ResultSet rst=pmt.executeQuery();
@@ -185,20 +165,9 @@ public class myjdbcproject {
         }
     }
 
-    private static void depositMoney() throws Exception {
+    private static void depositMoney(String accountNo, String depositorCustNo, double depositAmount) throws Exception {
         // Code to get account number, amount, and update balance
         ResultSet rst=null;
-        scanner.nextLine();
-        System.out.print("Enter account number to deposit to: ");
-        String accountNo = scanner.nextLine();
-        System.out.print("Enter your customer number (depositor): ");
-        String depositorCustNo = scanner.nextLine();
-        System.out.print("Enter amount to deposit: ");
-        double depositAmount = Double.parseDouble(scanner.nextLine());
-        if (depositAmount <= 0) {
-            System.out.println("Invalid amount. Deposit amount must be positive.");
-            return;
-        }
         pmt = conn.prepareStatement("SELECT * FROM ACCOUNT WHERE account_no=?");
         pmt.setString(1, accountNo);
         rst = pmt.executeQuery();
@@ -212,25 +181,17 @@ public class myjdbcproject {
         pmt.setDouble(1, newBalance);
         pmt.setString(2, accountNo);
         pmt.executeUpdate();
-        showAccountDetails();
+        showAccountDetails(accountNo);
         pmt = conn.prepareStatement("INSERT INTO DEPOSITOR (cust_no, account_no) VALUES (?, ?)");
         pmt.setString(1, depositorCustNo);
         pmt.setString(2, accountNo);
         pmt.executeUpdate();
     }
 
-    private static void withdrawMoney() throws Exception {
+    private static void withdrawMoney(String accountNo, double withdrawalAmount) throws Exception {
         // Code to get account number, amount, and update balance
         ResultSet rst=null;
-        scanner.nextLine();
-        System.out.print("Enter account number to withdraw from: ");
-        String accountNo = scanner.nextLine();
-        System.out.print("Enter amount to withdraw: ");
-        double withdrawalAmount = Double.parseDouble(scanner.nextLine());
-        if (withdrawalAmount <= 0) {
-            System.out.println("Invalid amount. Withdrawal amount must be positive.");
-            return;
-        }
+
         pmt = conn.prepareStatement("SELECT * FROM ACCOUNT WHERE account_no=?");
         pmt.setString(1, accountNo);
         rst = pmt.executeQuery();
@@ -248,7 +209,7 @@ public class myjdbcproject {
         pmt.setDouble(1, newBalance);
         pmt.setString(2, accountNo);
         pmt.executeUpdate();
-        showAccountDetails();
+        showAccountDetails(accountNo);
     }
 
     public static void main(String[] args) {
@@ -280,30 +241,72 @@ public class myjdbcproject {
                         break;
                     case 2:
                         // Add customer record method call
-                        addCustomerRecord();
+                        scanner.nextLine();
+                        System.out.println("Enter custmer no");
+                        String custNo = scanner.nextLine().toUpperCase();
+                        System.out.println("Enter custmer name");
+                        String name = scanner.nextLine().toUpperCase();
+                        System.out.println("Enter custmer phone no");
+                        long phoneNo = scanner.nextLong();
+                        scanner.nextLine();
+                        System.out.println("Enter custmer city");
+                        String city = scanner.next().toUpperCase();
+                        addCustomerRecord(custNo,name,phoneNo,city);
                         break;
                     case 3:
                         // Delete customer record method call
-                        deleteCustomerRecord();
+                        scanner.nextLine();
+                        System.out.println("Enter custmer no");
+                        custNo = scanner.nextLine().toUpperCase();
+                        deleteCustomerRecord(custNo);
                         break;
                     case 4:
-                        updateCustomerInformation();
+                        scanner.nextLine();
+                        System.out.println("Enter Customer number to be updated");
+                        custNo = scanner.nextLine().toUpperCase();
+                        updateCustomerInformation(custNo);
                         break;
                     case 5:
                         // Show account details method call
-                        showAccountDetails();
+                        scanner.nextLine();
+                        System.out.println("Enter Account number");
+                        String accountNo = scanner.nextLine().toUpperCase();
+                        showAccountDetails(accountNo);
                         break;
                     case 6:
                         // Show loan details method call
-                        showLoanDetails();
+                        scanner.nextLine();
+                        System.out.println("Enter Customer number to be updated");
+                        custNo = scanner.nextLine().toUpperCase();
+                        showLoanDetails(custNo);
                         break;
                     case 7:
                         // Deposit money method call
-                        depositMoney();
+                        scanner.nextLine();
+                        System.out.print("Enter account number to deposit to: ");
+                        accountNo = scanner.nextLine();
+                        System.out.print("Enter your customer number (depositor): ");
+                        String depositorCustNo = scanner.nextLine();
+                        System.out.print("Enter amount to deposit: ");
+                        double depositAmount = Double.parseDouble(scanner.nextLine());
+                        if (depositAmount <= 0) {
+                            System.out.println("Invalid amount. Deposit amount must be positive.");
+                            return;
+                        }
+                        depositMoney(accountNo,depositorCustNo,depositAmount);
                         break;
                     case 8:
                         // Withdraw money method call
-                        withdrawMoney();
+                        scanner.nextLine();
+                        System.out.print("Enter account number to withdraw from: ");
+                        accountNo = scanner.nextLine();
+                        System.out.print("Enter amount to withdraw: ");
+                        double withdrawalAmount = Double.parseDouble(scanner.nextLine());
+                        if (withdrawalAmount <= 0) {
+                            System.out.println("Invalid amount. Withdrawal amount must be positive.");
+                            return;
+                        }
+                        withdrawMoney(accountNo,withdrawalAmount);
                         break;
                     case 9:
                         System.out.println("Exiting program...");
