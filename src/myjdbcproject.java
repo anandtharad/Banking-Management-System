@@ -115,15 +115,21 @@ public class myjdbcproject {
         }
     }
 
-    private static void showAccountDetails(String accountNo) throws Exception{
+    private static void showAccountDetails(String custNo) throws Exception{
         // Code to get customer number and display account details
-        pmt=conn.prepareStatement("SELECT * FROM ACCOUNT WHERE ACCOUNT_NO=?");
-        pmt.setString(1,accountNo);
+        if(custNo.charAt(0)=='C') {
+            pmt = conn.prepareStatement("SELECT * FROM ACCOUNT WHERE ACCOUNT_NO=(SELECT ACCOUNT_NO FROM DEPOSITOR WHERE CUST_NO=?)");
+            pmt.setString(1, custNo);
+        }else{
+            pmt = conn.prepareStatement("SELECT * FROM ACCOUNT WHERE ACCOUNT_NO=?");
+            pmt.setString(1, custNo);
+
+        }
         ResultSet rst=pmt.executeQuery();
         System.out.println("\nACCOUNT DETAILS ARE AS FOLLOWS\n");
         System.out.printf("| %-15s | %-5s | %-10s | %-15s |\n", "Account No", "Type", "Balance", "Branch Code");
         while (rst.next()) {
-            accountNo = String.format("%-15s", rst.getString(1));
+            String accountNo = String.format("%-15s", rst.getString(1));
             String type = String.format("%-5s", rst.getString(2));
             String balance = String.format("%10d", rst.getLong(3));
             String brCode = String.format("%-15s", rst.getString(4));
@@ -218,6 +224,7 @@ public class myjdbcproject {
         String user = "sys as sysdba";
         String password = "root1234";
         try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
             conn = DriverManager.getConnection(url, user, password);
             x:
             do {
@@ -269,9 +276,9 @@ public class myjdbcproject {
                     case 5:
                         // Show account details method call
                         scanner.nextLine();
-                        System.out.println("Enter Account number");
-                        String accountNo = scanner.nextLine().toUpperCase();
-                        showAccountDetails(accountNo);
+                        System.out.println("Enter Customer number");
+                        custNo = scanner.nextLine().toUpperCase();
+                        showAccountDetails(custNo);
                         break;
                     case 6:
                         // Show loan details method call
@@ -284,7 +291,7 @@ public class myjdbcproject {
                         // Deposit money method call
                         scanner.nextLine();
                         System.out.print("Enter account number to deposit to: ");
-                        accountNo = scanner.nextLine();
+                        String accountNo = scanner.nextLine();
                         System.out.print("Enter your customer number (depositor): ");
                         String depositorCustNo = scanner.nextLine();
                         System.out.print("Enter amount to deposit: ");
