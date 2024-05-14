@@ -39,13 +39,19 @@ public class myjdbcproject {
 
     private static void deleteCustomerRecord(String custNo) throws Exception {
         // Code to get customer number and delete record from database
-        pmt = conn.prepareStatement("DELETE FROM CUSTOMER WHERE CUST_NO=?");
-        pmt.setString(1, custNo);
-        int r = pmt.executeUpdate();
-        if (r > 0) {
-            showCustomerRecords();
-        } else {
-            System.out.println("DATA DOESNOT EXIST OR ERROR IN DELETING DATA");
+        try {
+            PreparedStatement pmt = conn.prepareStatement("DELETE FROM CUSTOMER WHERE CUST_NO=?");
+            pmt.setString(1, custNo);
+            int r = pmt.executeUpdate();
+
+            if (r > 0) {
+                System.out.println("Customer record deleted successfully.");
+                showCustomerRecords(); // Assuming this function displays updated customer data
+            } else {
+                throw new Exception("Customer record not found or child records present. Deletion aborted.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -81,14 +87,14 @@ public class myjdbcproject {
                 break;
             case 2:
                 System.out.print("Enter new phone number: ");
-                long newPhoneNo = scanner.nextLong();
+                String newPhoneNo = scanner.next();
                 sql = "UPDATE CUSTOMER SET phone_no = ? WHERE cust_no = ?";
                 pmt = conn.prepareStatement(sql);
-                pmt.setLong(1, newPhoneNo);
+                pmt.setString(1, newPhoneNo);
                 pmt.setString(2, custNo);
                 r = pmt.executeUpdate();
-                if (r > 1) {
-                    System.out.println("Customer name updated successfully!");
+                if (r == 1) {
+                    System.out.println("Customer number updated successfully!");
                     System.out.println("New data is\n");
                     showCustomerRecords();
                 }else
@@ -103,8 +109,8 @@ public class myjdbcproject {
                 pmt.setString(1, newCity);
                 pmt.setString(2, custNo);
                 r = pmt.executeUpdate();
-                if (r > 1) {
-                    System.out.println("Customer name updated successfully!");
+                if (r == 1) {
+                    System.out.println("Customer city updated successfully!");
                     System.out.println("New data is\n");
                     showCustomerRecords();
                 }else
